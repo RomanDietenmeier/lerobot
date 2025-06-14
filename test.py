@@ -16,6 +16,8 @@ e_pressed = False
 zero_pressed = False
 one_pressed = False
 two_pressed = False
+y_pressed = False
+x_pressed = False
 
 
 def on_press(key):
@@ -28,7 +30,10 @@ def on_press(key):
     global one_pressed
     global two_pressed
     global zero_pressed
+    global y_pressed
+    global x_pressed
     try:
+        print("Key pressed:", key)
         if key.char == "w":
             w_pressed = True
         if key.char == "s":
@@ -47,6 +52,10 @@ def on_press(key):
             two_pressed = True
         if key.char == "0":
             zero_pressed = True
+        if key.char == "y":
+            y_pressed = True
+        if key.char == "x":
+            x_pressed = True
     except AttributeError:
         pass
 
@@ -61,6 +70,8 @@ def on_release(key):
     global one_pressed
     global two_pressed
     global zero_pressed
+    global y_pressed
+    global x_pressed
     try:
         if key.char == "w":
             w_pressed = False
@@ -80,6 +91,10 @@ def on_release(key):
             two_pressed = False
         if key.char == "0":
             zero_pressed = False
+        if key.char == "y":
+            y_pressed = False
+        if key.char == "x":
+            x_pressed = False
     except AttributeError:
         pass
 
@@ -94,7 +109,7 @@ motors = [
     "shoulder_lift",
     # "elbow_flex",
     "wrist_flex",
-    # "wrist_roll",
+    "wrist_roll",
     "gripper",
 ]
 
@@ -172,6 +187,7 @@ def default_pos():
             "shoulder_pan": 0.926298832057995,
             "shoulder_lift": -94.03611927761445,
             "wrist_flex": 98.57740585774059,
+            "wrist_roll": 22.0,
             "gripper": -96.03960396039604,
         },
     )
@@ -250,6 +266,12 @@ def control_with_keyboard():
             move_dict["wrist_flex"] = 0.5
         else:
             move_dict["wrist_flex"] = 0
+        if y_pressed:
+            move_dict["wrist_roll"] = -0.5
+        elif x_pressed:
+            move_dict["wrist_roll"] = 0.5
+        else:
+            move_dict["wrist_roll"] = 0
         if zero_pressed:
             break
 
@@ -284,3 +306,5 @@ set_pos(
 time.sleep(0.65)
 default_pos()
 bus.disconnect()
+
+# ToDo make this as a class and integrate it into the lerobot.common.motors package!
