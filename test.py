@@ -33,7 +33,6 @@ def on_press(key):
     global y_pressed
     global x_pressed
     try:
-        print("Key pressed:", key)
         if key.char == "w":
             w_pressed = True
         if key.char == "s":
@@ -114,7 +113,10 @@ motors = [
 ]
 
 bus = FeetechMotorsBus(
-    port="/dev/tty.usbmodem59700730781",
+    # port="/dev/tty.usbmodem59700730781",
+    # port="/dev/tty.usbmodem5A460817801",
+    # port="/dev/tty.usbmodem5A460851571",
+    port="/dev/tty.usbmodem5A460851551",
     motors={
         "shoulder_pan": Motor(1, "sts3215", MotorNormMode.RANGE_M100_100),
         "shoulder_lift": Motor(2, "sts3215", MotorNormMode.RANGE_M100_100),
@@ -283,26 +285,28 @@ default_pos()
 
 control_with_keyboard()
 
-set_pos(
-    {
-        "shoulder_pan": 0.926298832057995,
-        "shoulder_lift": -94.03611927761445,
-        "wrist_flex": 50.57740585774059,
-        "gripper": -96.03960396039604,
-    }
-)
-time.sleep(0.35)
-set_pos(
-    {
-        "shoulder_pan": 0.926298832057995,
-        "shoulder_lift": -94.03611927761445,
-        "wrist_flex": 0.0,
-        "gripper": 90.0,
-    }
-)
-time.sleep(0.65)
+
 default_pos()
 
 bus.disconnect()
 
 # ToDo make this as a class and integrate it into the lerobot.common.motors package!
+
+# set_pos(
+#     {
+#         "shoulder_pan": 0.926298832057995,
+#         "shoulder_lift": -94.03611927761445,
+#         "wrist_flex": 50.57740585774059,
+#         "gripper": -96.03960396039604,
+#     }
+# )
+# time.sleep(0.35)
+# set_pos(
+#     {
+#         "shoulder_pan": 0.926298832057995,
+#         "shoulder_lift": -94.03611927761445,
+#         "wrist_flex": 0.0,
+#         "gripper": 90.0,
+#     }
+# )
+# time.sleep(0.65)
