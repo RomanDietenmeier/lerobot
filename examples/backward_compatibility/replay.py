@@ -43,6 +43,7 @@ from lerobot.common.robots import (  # noqa: F401
     make_robot_from_config,
     so100_follower,
     so101_follower,
+    so101_follower_short,
 )
 from lerobot.common.utils.robot_utils import busy_wait
 from lerobot.common.utils.utils import (
@@ -77,7 +78,9 @@ def replay(cfg: ReplayConfig):
     logging.info(pformat(asdict(cfg)))
 
     robot = make_robot_from_config(cfg.robot)
-    dataset = LeRobotDataset(cfg.dataset.repo_id, root=cfg.dataset.root, episodes=[cfg.dataset.episode])
+    dataset = LeRobotDataset(
+        cfg.dataset.repo_id, root=cfg.dataset.root, episodes=[cfg.dataset.episode]
+    )
     actions = dataset.hf_dataset.select_columns("action")
     robot.connect()
 

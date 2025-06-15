@@ -1,0 +1,49 @@
+python lerobot/find_port.py
+
+
+python -m lerobot.setup_motors \
+    --robot.type=so101_follower \
+    --robot.port=/dev/tty.usbmodem59700730781
+
+python -m lerobot.setup_motors \
+    --robot.type=so101_follower_short \
+    --robot.port=/dev/tty.usbmodem59700730781
+
+python -m lerobot.setup_motors \
+    --robot.type=so101_follower \
+    --robot.port=/dev/tty.usbmodem58760432171
+
+python -m lerobot.calibrate \
+    --robot.type=so101_follower \
+    --robot.port=/dev/tty.usbmodem59700730781 \
+    --robot.id=my_awesome_follower_arm
+
+python -m lerobot.calibrate \
+    --robot.type=so101_follower_short \
+    --robot.port=/dev/tty.usbmodem59700730781 \
+    --robot.id=my_awesome_follower_arm
+
+python -m lerobot.calibrate \
+    --teleop.type=so101_leader \
+    --teleop.port=/dev/tty.usbmodem58760432171 \
+    --teleop.id=my_awesome_leader_arm
+
+python -m lerobot.calibrate \
+    --robot.type=so101_follower \
+    --robot.port=/dev/tty.usbmodem59700730781 \
+    --robot.id=my_awesome_follower_arm
+
+
+python -m lerobot.record \
+--teleop.type=so101_leader \
+--teleop.port=/dev/tty.usbmodem58760432171 \
+--teleop.id=my_awesome_leader_arm
+
+-------------------------------------------
+NAME            |    MIN |    POS |    MAX
+shoulder_pan    |   2046 |   2047 |   2047
+shoulder_lift   |   2047 |   2047 |   2047
+elbow_flex      |   2047 |   2047 |   2047
+wrist_flex      |   2047 |   2047 |   2047
+wrist_roll      |   2047 |   2047 |   2047
+gripper         |   2047 |   2047 |   2047

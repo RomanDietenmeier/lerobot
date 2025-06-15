@@ -47,8 +47,12 @@ import rerun as rr
 from lerobot.common.cameras import (  # noqa: F401
     CameraConfig,  # noqa: F401
 )
-from lerobot.common.cameras.opencv.configuration_opencv import OpenCVCameraConfig  # noqa: F401
-from lerobot.common.cameras.realsense.configuration_realsense import RealSenseCameraConfig  # noqa: F401
+from lerobot.common.cameras.opencv.configuration_opencv import (
+    OpenCVCameraConfig,
+)  # noqa: F401
+from lerobot.common.cameras.realsense.configuration_realsense import (
+    RealSenseCameraConfig,
+)  # noqa: F401
 from lerobot.common.datasets.image_writer import safe_stop_image_writer
 from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
 from lerobot.common.datasets.utils import build_dataset_frame, hw_to_dataset_features
@@ -61,6 +65,7 @@ from lerobot.common.robots import (  # noqa: F401
     make_robot_from_config,
     so100_follower,
     so101_follower,
+    so101_follower_short,
 )
 from lerobot.common.teleoperators import (  # noqa: F401
     Teleoperator,
@@ -146,11 +151,15 @@ class RecordConfig:
         policy_path = parser.get_path_arg("policy")
         if policy_path:
             cli_overrides = parser.get_cli_overrides("policy")
-            self.policy = PreTrainedConfig.from_pretrained(policy_path, cli_overrides=cli_overrides)
+            self.policy = PreTrainedConfig.from_pretrained(
+                policy_path, cli_overrides=cli_overrides
+            )
             self.policy.pretrained_path = policy_path
 
         if self.teleop is None and self.policy is None:
-            raise ValueError("Choose a policy, a teleoperator or both to control the robot")
+            raise ValueError(
+                "Choose a policy, a teleoperator or both to control the robot"
+            )
 
     @classmethod
     def __get_path_fields__(cls) -> list[str]:
@@ -171,7 +180,9 @@ def record_loop(
     display_data: bool = False,
 ):
     if dataset is not None and dataset.fps != fps:
-        raise ValueError(f"The dataset fps should be equal to requested fps ({dataset.fps} != {fps}).")
+        raise ValueError(
+            f"The dataset fps should be equal to requested fps ({dataset.fps} != {fps})."
+        )
 
     # if policy is given it needs cleaning up
     if policy is not None:
@@ -189,7 +200,9 @@ def record_loop(
         observation = robot.get_observation()
 
         if policy is not None or dataset is not None:
-            observation_frame = build_dataset_frame(dataset.features, observation, prefix="observation")
+            observation_frame = build_dataset_frame(
+                dataset.features, observation, prefix="observation"
+            )
 
         if policy is not None:
             action_values = predict_action(
@@ -200,7 +213,10 @@ def record_loop(
                 task=single_task,
                 robot_type=robot.robot_type,
             )
-            action = {key: action_values[i].item() for i, key in enumerate(robot.action_features)}
+            action = {
+                key: action_values[i].item()
+                for i, key in enumerate(robot.action_features)
+            }
         elif policy is None and teleop is not None:
             action = teleop.get_action()
         else:
@@ -216,7 +232,9 @@ def record_loop(
         sent_action = robot.send_action(action)
 
         if dataset is not None:
-            action_frame = build_dataset_frame(dataset.features, sent_action, prefix="action")
+            action_frame = build_dataset_frame(
+                dataset.features, sent_action, prefix="action"
+            )
             frame = {**observation_frame, **action_frame}
             dataset.add_frame(frame, task=single_task)
 
@@ -244,10 +262,16 @@ def record(cfg: RecordConfig) -> LeRobotDataset:
         _init_rerun(session_name="recording")
 
     robot = make_robot_from_config(cfg.robot)
-    teleop = make_teleoperator_from_config(cfg.teleop) if cfg.teleop is not None else None
+    teleop = (
+        make_teleoperator_from_config(cfg.teleop) if cfg.teleop is not None else None
+    )
 
-    action_features = hw_to_dataset_features(robot.action_features, "action", cfg.dataset.video)
-    obs_features = hw_to_dataset_features(robot.observation_features, "observation", cfg.dataset.video)
+    action_features = hw_to_dataset_features(
+        robot.action_features, "action", cfg.dataset.video
+    )
+    obs_features = hw_to_dataset_features(
+        robot.observation_features, "observation", cfg.dataset.video
+    )
     dataset_features = {**action_features, **obs_features}
 
     if cfg.resume:
@@ -259,9 +283,12 @@ def record(cfg: RecordConfig) -> LeRobotDataset:
         if hasattr(robot, "cameras") and len(robot.cameras) > 0:
             dataset.start_image_writer(
                 num_processes=cfg.dataset.num_image_writer_processes,
-                num_threads=cfg.dataset.num_image_writer_threads_per_camera * len(robot.cameras),
+                num_threads=cfg.dataset.num_image_writer_threads_per_camera
+                * len(robot.cameras),
             )
-        sanity_check_dataset_robot_compatibility(dataset, robot, cfg.dataset.fps, dataset_features)
+        sanity_check_dataset_robot_compatibility(
+            dataset, robot, cfg.dataset.fps, dataset_features
+        )
     else:
         # Create empty dataset or load existing saved episodes
         sanity_check_dataset_name(cfg.dataset.repo_id, cfg.policy)
@@ -273,11 +300,14 @@ def record(cfg: RecordConfig) -> LeRobotDataset:
             features=dataset_features,
             use_videos=cfg.dataset.video,
             image_writer_processes=cfg.dataset.num_image_writer_processes,
-            image_writer_threads=cfg.dataset.num_image_writer_threads_per_camera * len(robot.cameras),
+            image_writer_threads=cfg.dataset.num_image_writer_threads_per_camera
+            * len(robot.cameras),
         )
 
     # Load pretrained policy
-    policy = None if cfg.policy is None else make_policy(cfg.policy, ds_meta=dataset.meta)
+    policy = (
+        None if cfg.policy is None else make_policy(cfg.policy, ds_meta=dataset.meta)
+    )
 
     robot.connect()
     if teleop is not None:
@@ -302,7 +332,8 @@ def record(cfg: RecordConfig) -> LeRobotDataset:
         # Execute a few seconds without recording to give time to manually reset the environment
         # Skip reset for the last episode to be recorded
         if not events["stop_recording"] and (
-            (recorded_episodes < cfg.dataset.num_episodes - 1) or events["rerecord_episode"]
+            (recorded_episodes < cfg.dataset.num_episodes - 1)
+            or events["rerecord_episode"]
         ):
             log_say("Reset the environment", cfg.play_sounds)
             record_loop(

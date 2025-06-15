@@ -39,8 +39,12 @@ import draccus
 import numpy as np
 import rerun as rr
 
-from lerobot.common.cameras.opencv.configuration_opencv import OpenCVCameraConfig  # noqa: F401
-from lerobot.common.cameras.realsense.configuration_realsense import RealSenseCameraConfig  # noqa: F401
+from lerobot.common.cameras.opencv.configuration_opencv import (
+    OpenCVCameraConfig,
+)  # noqa: F401
+from lerobot.common.cameras.realsense.configuration_realsense import (
+    RealSenseCameraConfig,
+)  # noqa: F401
 from lerobot.common.robots import (  # noqa: F401
     Robot,
     RobotConfig,
@@ -48,6 +52,7 @@ from lerobot.common.robots import (  # noqa: F401
     make_robot_from_config,
     so100_follower,
     so101_follower,
+    so101_follower_short,
 )
 from lerobot.common.teleoperators import (
     Teleoperator,
@@ -58,7 +63,12 @@ from lerobot.common.utils.robot_utils import busy_wait
 from lerobot.common.utils.utils import init_logging, move_cursor_up
 from lerobot.common.utils.visualization_utils import _init_rerun
 
-from .common.teleoperators import gamepad, koch_leader, so100_leader, so101_leader  # noqa: F401
+from .common.teleoperators import (
+    gamepad,
+    koch_leader,
+    so100_leader,
+    so101_leader,
+)  # noqa: F401
 
 
 @dataclass
@@ -73,7 +83,11 @@ class TeleoperateConfig:
 
 
 def teleop_loop(
-    teleop: Teleoperator, robot: Robot, fps: int, display_data: bool = False, duration: float | None = None
+    teleop: Teleoperator,
+    robot: Robot,
+    fps: int,
+    display_data: bool = False,
+    duration: float | None = None,
 ):
     display_len = max(len(key) for key in robot.action_features)
     start = time.perf_counter()
@@ -123,7 +137,13 @@ def teleoperate(cfg: TeleoperateConfig):
     robot.connect()
 
     try:
-        teleop_loop(teleop, robot, cfg.fps, display_data=cfg.display_data, duration=cfg.teleop_time_s)
+        teleop_loop(
+            teleop,
+            robot,
+            cfg.fps,
+            display_data=cfg.display_data,
+            duration=cfg.teleop_time_s,
+        )
     except KeyboardInterrupt:
         pass
     finally:
