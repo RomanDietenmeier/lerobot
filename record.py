@@ -72,7 +72,7 @@ def resize_and_crop_image(image, target_size=(32, 20), crop_right_pixels=9):
 
 
 time.sleep(0.2)
-default_pos()
+print("start")
 bus.disable_torque(motors=motors)
 video_capture = cv2.VideoCapture(0)
 ret, frame = video_capture.read()
@@ -93,5 +93,6 @@ while not was_enter_pressed:
 file_name = f"recordings/{int(time.time())}.parquet"
 print(len(df), file_name)
 df.to_parquet(file_name)
+print("fin")
 
 bus.disconnect()

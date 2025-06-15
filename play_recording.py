@@ -8,7 +8,7 @@ from lerobot.common.utils.utils import enter_pressed
 from pynput import keyboard
 import cv2
 
-df = pd.read_parquet("recordings/1749996189.parquet")
+df = pd.read_parquet("recordings/1749997013.parquet")
 calibration = joblib.load("small_robot_calibration.joblib")
 
 motors = [
