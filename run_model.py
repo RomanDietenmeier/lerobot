@@ -8,6 +8,10 @@ from lerobot.common.utils.utils import enter_pressed
 from pynput import keyboard
 import cv2
 import matplotlib.pyplot as plt
+import torch
+import numpy as np
+
+model_object = torch.jit.load("model_jit_3.pt")
 
 calibration = joblib.load("small_robot_calibration.joblib")
 
@@ -73,14 +77,14 @@ def resize_and_crop_image(image, target_size=(32, 20), crop_right_pixels=9):
 
 time.sleep(0.2)
 print("start")
-bus.disable_torque(motors=motors)
 video_capture = cv2.VideoCapture(0)
 ret, frame = video_capture.read()
 img = resize_and_crop_image(frame)
 data_point = read_pos(verbose=False)
 data_point["image"] = img.reshape(-1)
-df = pd.DataFrame([data_point])
 
+last_30_data_points = []
+last_30_images = []
 was_enter_pressed = False
 last_time_stamp = time.time() - 1000
 while not was_enter_pressed and ret:
@@ -88,13 +92,32 @@ while not was_enter_pressed and ret:
         ret, frame = video_capture.read()
         img = resize_and_crop_image(frame)
         data_point = read_pos(verbose=False)
-        data_point["image"] = img.reshape(-1)
-        df.loc[len(df)] = data_point
+        last_30_data_points.append([data_point[motor] for motor in motors])
+        last_30_images.append(img)
+        if len(last_30_data_points) > 30:
+            last_30_data_points.pop(0)
+            last_30_images.pop(0)
+
+        if len(last_30_data_points) >= 30:
+            pos_tensor = torch.tensor(
+                np.array(last_30_data_points).reshape(-1),
+                dtype=torch.float32,
+            )
+            # print(
+            #     "pos_tensor",
+            #     pos_tensor.shape,
+            # )
+            img_tensor = torch.tensor(last_30_images, dtype=torch.float32)
+            target_pos_array = model_object(pos_tensor, img_tensor).detach().numpy()
+
+            target_pos = {}
+            for motor, value in zip(motors, target_pos_array):
+                target_pos[motor] = value
+
+            bus.sync_write(
+                data_name="Goal_Position",
+                values=target_pos,
+            )
+
         last_time_stamp = time.time()
     was_enter_pressed = enter_pressed()
-file_name = f"recordings/{int(time.time())}.parquet"
-print(len(df), file_name)
-df.to_parquet(file_name)
-print("fin")
-
-bus.disconnect()
