@@ -127,6 +127,7 @@ bus = FeetechMotorsBus(
 )
 bus.connect()
 bus.write_calibration(calibration)
+time.sleep(0.2)
 
 
 def calibrate():
@@ -278,14 +279,10 @@ def control_with_keyboard():
 
 # calibrate()
 
-
-# read_pos()
 default_pos()
-# play_record()
-# record()
+
 control_with_keyboard()
 
-# # default_pos()
 set_pos(
     {
         "shoulder_pan": 0.926298832057995,
@@ -305,6 +302,7 @@ set_pos(
 )
 time.sleep(0.65)
 default_pos()
+
 bus.disconnect()
 
 # ToDo make this as a class and integrate it into the lerobot.common.motors package!
